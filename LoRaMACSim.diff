@@ -1,0 +1,172 @@
+[1mdiff --git a/Framework/LoRaParameters.py b/Framework/LoRaParameters.py[m
+[1mindex 356b6af..50a663d 100644[m
+[1m--- a/Framework/LoRaParameters.py[m
+[1m+++ b/Framework/LoRaParameters.py[m
+[36m@@ -28,16 +28,15 @@[m [mclass LoRaParameters:[m
+     RX_2_NO_ACK_AIR_TIME = 40[m
+     RX_2_NO_ACK_ENERGY_MJ = 1.3[m
+ [m
+[31m-    RX_2_DEFAULT_FREQ = 868525000[m
+[32m+[m[32m    RX_2_DEFAULT_FREQ = 868100000[m
+     RX_2_DEFAULT_SF = 9[m
+ [m
+     SPREADING_FACTORS = [12, 11, 10, 9, 8, 7][m
+ [m
+[31m-    DEFAULT_CHANNELS = [868100000, 868300000, 868500000][m
+[31m-    CHANNELS = [868100000, 868300000, 868500000, 868525000][m
+[31m-    CHANNEL_DUTY_CYCLE_PROC = {868100000: 1 / 3, 868300000: 1 / 3, 868500000: 1 / 3, 868525000: 10 / 3}  # in procent[m
+[31m-    CHANNEL_DUTY_CYCLE = {868100000: (1 / 100) / 3, 868300000: (1 / 100) / 3, 868500000: (1 / 100) / 3,[m
+[31m-                          868525000: (10 / 100) / 3}  # not in procent[m
+[32m+[m[32m    DEFAULT_CHANNELS = [868100000][m
+[32m+[m[32m    CHANNELS = [868100000][m
+[32m+[m[32m    CHANNEL_DUTY_CYCLE_PROC = {868100000: 1 / 3}  # in procent[m
+[32m+[m[32m    CHANNEL_DUTY_CYCLE = {868100000: (1 / 100) / 3}  # not in procent[m
+ [m
+     JOIN_TX_TIME_MS = 160[m
+     JOIN_TX_ENERGY_MJ = 9[m
+[1mdiff --git a/Simulations/multi_MAC_simulation_config/Locations/1000_locations_1500_cellsize_2_sim.pkl b/Simulations/multi_MAC_simulation_config/Locations/1000_locations_1500_cellsize_2_sim.pkl[m
+[1mindex 59996a2..6cb7263 100644[m
+Binary files a/Simulations/multi_MAC_simulation_config/Locations/1000_locations_1500_cellsize_2_sim.pkl and b/Simulations/multi_MAC_simulation_config/Locations/1000_locations_1500_cellsize_2_sim.pkl differ
+[1mdiff --git a/Simulations/multi_MAC_simulation_config/Locations/500_locations_1500_cellsize_2_sim.pkl b/Simulations/multi_MAC_simulation_config/Locations/500_locations_1500_cellsize_2_sim.pkl[m
+[1mindex 79a68ad..03ecfe6 100644[m
+Binary files a/Simulations/multi_MAC_simulation_config/Locations/500_locations_1500_cellsize_2_sim.pkl and b/Simulations/multi_MAC_simulation_config/Locations/500_locations_1500_cellsize_2_sim.pkl differ
+[1mdiff --git a/Simulations/multi_MAC_simulation_config/Results/ALOHA_False_False_500_10_12_2_SF_7.p b/Simulations/multi_MAC_simulation_config/Results/ALOHA_False_False_500_10_12_2_SF_7.p[m
+[1mdeleted file mode 100644[m
+[1mindex 6dc878f..0000000[m
+Binary files a/Simulations/multi_MAC_simulation_config/Results/ALOHA_False_False_500_10_12_2_SF_7.p and /dev/null differ
+[1mdiff --git a/Simulations/multi_MAC_simulation_config/Results/ALOHA_False_False_500_10_3_2_SF_7.p b/Simulations/multi_MAC_simulation_config/Results/ALOHA_False_False_500_10_3_2_SF_7.p[m
+[1mdeleted file mode 100644[m
+[1mindex c7a7953..0000000[m
+Binary files a/Simulations/multi_MAC_simulation_config/Results/ALOHA_False_False_500_10_3_2_SF_7.p and /dev/null differ
+[1mdiff --git a/Simulations/multi_MAC_simulation_config/Results/ALOHA_False_False_500_51_8_2_SF_7.p b/Simulations/multi_MAC_simulation_config/Results/ALOHA_False_False_500_51_8_2_SF_7.p[m
+[1mdeleted file mode 100644[m
+[1mindex 9eb0831..0000000[m
+Binary files a/Simulations/multi_MAC_simulation_config/Results/ALOHA_False_False_500_51_8_2_SF_7.p and /dev/null differ
+[1mdiff --git a/Simulations/multi_MAC_simulation_config/simscript_parallel.py b/Simulations/multi_MAC_simulation_config/simscript_parallel.py[m
+[1mindex 96b6839..cf33f16 100644[m
+[1m--- a/Simulations/multi_MAC_simulation_config/simscript_parallel.py[m
+[1m+++ b/Simulations/multi_MAC_simulation_config/simscript_parallel.py[m
+[36m@@ -6,12 +6,14 @@[m [mimport pickle[m
+ import pdb[m
+ import pandas as pd[m
+ import sys[m
+[32m+[m[32mimport time[m
+ import cProfile[m
+ from functools import partial[m
+ from itertools import product[m
+ [m
+[31m-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..\..','Simulations'))[m
+[31m-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..\..','Framework'))[m
+[32m+[m[32msys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../Simulations")))[m
+[32m+[m[32msys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../Framework")))[m
+[32m+[m
+ from Location import Location[m
+ from LoRaPacket import *[m
+ import SimulationProcess[m
+[36m@@ -46,7 +48,7 @@[m [mcell_size=1500[m
+ sf=[7] #SF = 7,8,9,10,11,12[m
+ [m
+ #Number of nodes Combinations[m
+[31m-num_nodes = [500, 1000][m
+[32m+[m[32mnum_nodes = [5000, 10000][m
+ [m
+ #Transmission Intervals Combinations (in minutes)[m
+ TX_Intervall =[3, 5, 8, 10, 12, 15, 17, 20, 25, 30] #SF 7 [m
+[36m@@ -55,7 +57,7 @@[m [mTX_Intervall =[3, 5, 8, 10, 12, 15, 17, 20, 25, 30] #SF 7[m
+ [m
+ [m
+ [m
+[31m-std_jitter=[[0, (680e-6)]] #array of array synchonization error distribution combinations (680us Gaussian distribution)[m
+[32m+[m[32mstd_jitter=[0, (680e-6)] #array of array synchonization error distribution combinations (680us Gaussian distribution)[m
+ #std_jitter=[[0, 0],[0, (582e-6)/3],[1, 582e-6]] #[perfect synchonization, 582us Gaussian Distribution, 1 ms Uniform Distribution][m
+ num_simulations = 2 #Number of simulations runs for each combination of (num_nodes, TX_Interval, std_jitter,)[m
+ guard_times = [3] #S-ALOHA guard time in ms; the array must contain the same number of elements of std_jitter[m
+[36m@@ -92,11 +94,11 @@[m [mdef generate_locations(nodes, cell_size):[m
+ [m
+ def setup(nodes, payload_size, tx_intervall, cell_size, mac, sf, std_jitter=0, guard_time=0):[m
+     if start_with_fixed_sf and mac == 'SLOTTED_ALOHA':[m
+[31m-        results_file = "Results/{}_{}_{}_{}_{}_{}_{}_SF_{}_GT_{}_JITTER_{}.p".format(mac, adr, confirmed_messages, nodes, payload_size, tx_intervall, num_simulations, sf, guard_time, std_jitter)[m
+[32m+[m[32m        results_file = "Results_01/{}_{}_{}_{}_{}_{}_{}_SF_{}_GT_{}_JITTER_{}.p".format(mac, adr, confirmed_messages, nodes, payload_size, tx_intervall, num_simulations, sf, guard_time, std_jitter)[m
+     elif start_with_fixed_sf:[m
+[31m-        results_file = "Results/{}_{}_{}_{}_{}_{}_{}_SF_{}.p".format(mac, adr, confirmed_messages, nodes, payload_size, tx_intervall, num_simulations, sf)[m
+[32m+[m[32m        results_file = "Results_01/{}_{}_{}_{}_{}_{}_{}_SF_{}.p".format(mac, adr, confirmed_messages, nodes, payload_size, tx_intervall, num_simulations, sf)[m
+     else:[m
+[31m-        results_file = "Results/{}_{}_{}_{}_{}_{}_{}_SF_random.p".format(mac, adr, confirmed_messages, nodes, payload_size, tx_intervall, num_simulations)[m
+[32m+[m[32m        results_file = "Results_01/{}_{}_{}_{}_{}_{}_{}_SF_random.p".format(mac, adr, confirmed_messages, nodes, payload_size, tx_intervall, num_simulations)[m
+     locations_file = "Locations/"+"{}_locations_{}_cellsize_{}_sim.pkl".format(nodes, cell_size, num_simulations)[m
+     with open(locations_file, 'rb') as file_handler:[m
+         locations_per_simulation = pickle.load(file_handler)[m
+[36m@@ -171,33 +173,46 @@[m [mdef run_parallel(nodes, sf, payload_size, tx_intervall, num_simulations,cell_siz[m
+ 		[m
+ 		_sim_idx = n_sim[m
+ 		process_results(_results, nodes, _sim_idx, r_list)[m
+[31m-		# update Results[m
+[32m+[m		[32m# update Results_01[m
+ 		_results['idx_of_simulations_done'] = n_sim[m
+ 		pickle.dump(_results, open(results_file, "wb"))[m
+ [m
+ if __name__ == '__main__':[m
+[31m-	pool = mp.Pool(mp.cpu_count())[m
+[31m-	print('Generating Location for Cell Size {} and Nodes {}'.format(cell_size, num_nodes))[m
+[31m-	for nodes in num_nodes:[m
+[31m-			generate_locations(nodes, cell_size)[m
+[31m-		[m
+[31m-	for run in runs:[m
+[31m-		for mac in run.mac_schemes:[m
+[31m-			print('Performing {} simulation'.format(mac))[m
+[31m-			print('\tUsing SF: {}'.format(run.sf))[m
+[31m-			print('\t\tSimulating: {} nodes in parallel'.format(run.num_nodes))[m
+[31m-			if mac == 'SLOTTED_ALOHA':[m
+[31m-				j=0[m
+[31m-				for guard_time in run.guard_time:[m
+[31m-					print('\t\t\tUsing guard time: {} ms'.format(guard_time))[m
+[31m-					print('\t\t\t\tUsing jitter distr: {} std: {:.3f} ms'.format(std_jitter[0],(std_jitter[1]*1000)))[m
+[31m-					iterable = product(run.num_nodes, run.sf, run.p_sizes, run.tx_intervall)[m
+[31m-					func = partial(run_parallel, num_simulations=num_simulations, cell_size=run.cell_size, mac=mac, path_loss_variances=path_loss_variances, confirmed_messages=confirmed_messages, adr=adr, std_jitter=std_jitter, guard_time=guard_time)[m
+[31m-					pool.starmap(func, iterable)[m
+[31m-					j+=1[m
+[31m-			else:[m
+[31m-				iterable = product(run.num_nodes, run.sf, run.p_sizes, run.tx_intervall)[m
+[31m-				func = partial(run_parallel, num_simulations=num_simulations,cell_size=cell_size, mac=mac, path_loss_variances=path_loss_variances, confirmed_messages=confirmed_messages, adr=adr, std_jitter=[0,0], guard_time=0)[m
+[31m-				pool.starmap(func, iterable)[m
+[31m-	pool.close()[m
+[31m-[m
+[32m+[m[32m    start_time = time.time()[m
+[32m+[m[32m    pool = mp.Pool(mp.cpu_count())[m
+[32m+[m[32m    print('Generating Location for Cell Size {} and Nodes {}'.format(cell_size, num_nodes))[m
+[32m+[m[32m    for nodes in num_nodes:[m
+[32m+[m[32m            generate_locations(nodes, cell_size)[m
+[32m+[m[41m        [m
+[32m+[m[32m    for run in runs:[m
+[32m+[m[32m        for mac in run.mac_schemes:[m
+[32m+[m[32m            print('Performing {} simulation'.format(mac))[m
+[32m+[m[32m            print('\tUsing SF: {}'.format(run.sf))[m
+[32m+[m[32m            print('\t\tSimulating: {} nodes in parallel'.format(run.num_nodes))[m
+[32m+[m[32m            if mac == 'SLOTTED_ALOHA':[m
+[32m+[m[32m                j=0[m
+[32m+[m[32m                for guard_time in run.guard_time:[m
+[32m+[m[32m                    print('\t\t\tUsing guard time: {} ms'.format(guard_time))[m
+[32m+[m[32m                    print('\t\t\t\tUsing jitter distr: {} std: {:.3f} ms'.format(std_jitter[0],(std_jitter[1]*1000)))[m
+[32m+[m[32m                    iterable = product(run.num_nodes, run.sf, run.p_sizes, run.tx_intervall)[m
+[32m+[m[32m                    func = partial(run_parallel, num_simulations=num_simulations, cell_size=run.cell_size, mac=mac, path_loss_variances=path_loss_variances, confirmed_messages=confirmed_messages, adr=adr, std_jitter=std_jitter, guard_time=guard_time)[m
+[32m+[m[32m                    pool.starmap(func, iterable)[m
+[32m+[m[32m                    j+=1[m
+[32m+[m[32m            else:[m
+[32m+[m[32m                iterable = product(run.num_nodes, run.sf, run.p_sizes, run.tx_intervall)[m
+[32m+[m[32m                func = partial(run_parallel, num_simulations=num_simulations,cell_size=cell_size, mac=mac, path_loss_variances=path_loss_variances, confirmed_messages=confirmed_messages, adr=adr, std_jitter=[0,0], guard_time=0)[m
+[32m+[m[32m                pool.starmap(func, iterable)[m
+[32m+[m[32m    pool.close()[m
+[32m+[m
+[32m+[m[32m    pool.join()[m
+[32m+[m
+[32m+[m[32m    end_time = time.time()[m
+[32m+[m[32m    elapsed = end_time - start_time[m
+[32m+[m
+[32m+[m[32m    # Save the total simulation time to a text file in the "Results_01" folder.[m
+[32m+[m[32m    results_folder = "Results_01"[m
+[32m+[m[32m    if not os.path.exists(results_folder):[m
+[32m+[m[32m        os.makedirs(results_folder)[m
+[32m+[m[32m    time_file = os.path.join(results_folder, "simulation_time.txt")[m
+[32m+[m[32m    with open(time_file, "w") as f:[m
+[32m+[m[32m        f.write(f"Total simulation time: {elapsed:.2f} seconds")[m
+\ No newline at end of file[m
